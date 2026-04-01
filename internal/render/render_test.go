@@ -77,3 +77,19 @@ func TestArgvRendersDifferentArgModes(t *testing.T) {
 		t.Fatalf("Argv() = %#v, want %#v", got, want)
 	}
 }
+
+func TestCommandStringIncludesEnvAssignments(t *testing.T) {
+	inv := &invoke.Invocation{
+		Bin: "/bin/echo",
+		Env: map[string]string{
+			"APP_MODE":  "debug",
+			"DATA_ROOT": "/tmp/a b",
+		},
+	}
+
+	got := CommandString(inv, "/tmp")
+	want := "APP_MODE=debug DATA_ROOT='/tmp/a b' /bin/echo"
+	if got != want {
+		t.Fatalf("CommandString() = %q, want %q", got, want)
+	}
+}

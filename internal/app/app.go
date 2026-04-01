@@ -101,7 +101,7 @@ func runInvocation(parsed *cli.Parsed, cfg *config.Config, configDir string, std
 
 	argv := render.Argv(inv, configDir)
 	if parsed.Action == cli.ActionShow {
-		fmt.Fprintln(stdout, render.ShellString(argv))
+		fmt.Fprintln(stdout, render.CommandString(inv, configDir))
 		return 0
 	}
 
@@ -111,7 +111,7 @@ func runInvocation(parsed *cli.Parsed, cfg *config.Config, configDir string, std
 		return 1
 	}
 
-	if err := runexec.Run(argv, stdin, stdout, stderr); err != nil {
+	if err := runexec.Run(argv, inv.Env, stdin, stdout, stderr); err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
 	}
@@ -219,7 +219,7 @@ func runRepeat(index int, configPath, configDir string, stdin io.Reader, stdout,
 		fmt.Fprintln(stderr, err)
 		return 1
 	}
-	if err := runexec.Run(argv, stdin, stdout, stderr); err != nil {
+	if err := runexec.Run(argv, inv.Env, stdin, stdout, stderr); err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
 	}

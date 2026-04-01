@@ -23,6 +23,7 @@ type BoundParam struct {
 type Invocation struct {
 	ProfileName string
 	Bin         string
+	Env         map[string]string
 	Params      []BoundParam
 	LiteralArgs []string
 	ExtraArgs   []string
@@ -89,6 +90,7 @@ func Build(p *config.Profile, parsed *cli.Parsed) (*Invocation, error) {
 	return &Invocation{
 		ProfileName: p.Name,
 		Bin:         p.Bin,
+		Env:         copyEnv(p.Env),
 		Params:      params,
 		LiteralArgs: append([]string{}, p.LiteralArgs...),
 		ExtraArgs:   append([]string{}, parsed.ExtraArgs...),
@@ -196,4 +198,15 @@ func contains(items []string, target string) bool {
 		}
 	}
 	return false
+}
+
+func copyEnv(src map[string]string) map[string]string {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make(map[string]string, len(src))
+	for key, value := range src {
+		dst[key] = value
+	}
+	return dst
 }

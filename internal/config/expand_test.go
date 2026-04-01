@@ -12,6 +12,7 @@ func TestExpandReplacesConfiguredVariables(t *testing.T) {
 			"main": {
 				Name:        "main",
 				Bin:         "${CONFIG_DIR}/build/app",
+				Env:         map[string]string{"CACHE_DIR": "${CWD}/cache", "HOME_DIR": "${HOME}"},
 				LiteralArgs: []string{"--work=${CWD}"},
 				Params: []ParamSpec{
 					{
@@ -42,6 +43,9 @@ func TestExpandReplacesConfiguredVariables(t *testing.T) {
 	}
 	if profile.LiteralArgs[0] != "--work=/tmp/project/work" {
 		t.Fatalf("literal_args = %#v", profile.LiteralArgs)
+	}
+	if profile.Env["CACHE_DIR"] != "/tmp/project/work/cache" || profile.Env["HOME_DIR"] != "/Users/tester" {
+		t.Fatalf("env = %#v", profile.Env)
 	}
 	if profile.Params[0].Default != "/Users/tester/data" {
 		t.Fatalf("default = %q", profile.Params[0].Default)

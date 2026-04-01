@@ -30,6 +30,7 @@ version = 1
 
 [profiles.main-app]
 bin = "build/app/main_app/Debug/main_app"
+env = { APP_MODE = "debug" }
 
 [[profiles.main-app.params]]
 name = "data_dir"
@@ -99,6 +100,16 @@ You can use a few built-in variables in `run.toml` string fields such as `bin`, 
 - `${CWD}`: current working directory where `run` was invoked
 - `${CONFIG_DIR}`: directory containing `run.toml`
 
+Profiles can also define environment variables:
+
+```toml
+[profiles.main-app]
+bin = "build/app/main_app/Debug/main_app"
+env = { APP_MODE = "debug", DATA_DIR = "${CWD}/.data" }
+```
+
+Child profiles inherit parent `env` values and can override individual keys.
+
 ## Completion helpers
 
 These commands print one item per line for shell integration:
@@ -164,6 +175,7 @@ version = 1
 
 [profiles.main-app]
 bin = "build/app/main_app/Debug/main_app"
+env = { APP_MODE = "debug" }
 
 [[profiles.main-app.params]]
 name = "data_dir"
@@ -209,6 +221,16 @@ param の最終 argv への描画方法は `arg_mode` で選べます。
 - `${HOME}`: ユーザーのホームディレクトリ
 - `${CWD}`: `run` を実行したカレントディレクトリ
 - `${CONFIG_DIR}`: `run.toml` を含むディレクトリ
+
+profile には環境変数も設定できます。
+
+```toml
+[profiles.main-app]
+bin = "build/app/main_app/Debug/main_app"
+env = { APP_MODE = "debug", DATA_DIR = "${CWD}/.data" }
+```
+
+子 profile は親の `env` を引き継ぎ、同じキーだけ個別に上書きできます。
 
 ## 補完用ヘルパー
 

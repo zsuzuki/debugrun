@@ -27,6 +27,7 @@ func Expand(cfg *Config, ctx ExpandContext) *Config {
 			Name:        profile.Name,
 			Bin:         expandString(profile.Bin, ctx),
 			Inherits:    profile.Inherits,
+			Env:         expandMap(profile.Env, ctx),
 			LiteralArgs: expandSlice(profile.LiteralArgs, ctx),
 			Params:      make([]ParamSpec, 0, len(profile.Params)),
 		}
@@ -64,6 +65,18 @@ func expandSlice(items []string, ctx ExpandContext) []string {
 	out := make([]string, 0, len(items))
 	for _, item := range items {
 		out = append(out, expandString(item, ctx))
+	}
+	return out
+}
+
+func expandMap(items map[string]string, ctx ExpandContext) map[string]string {
+	if len(items) == 0 {
+		return nil
+	}
+
+	out := make(map[string]string, len(items))
+	for key, value := range items {
+		out[key] = expandString(value, ctx)
 	}
 	return out
 }

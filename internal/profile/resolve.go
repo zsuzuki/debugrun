@@ -44,6 +44,7 @@ func resolve(cfg *config.Config, name string, visiting map[string]bool) (config.
 	if current.Bin != "" {
 		merged.Bin = current.Bin
 	}
+	merged.Env = mergeEnv(parent.Env, current.Env)
 	merged.LiteralArgs = append(append([]string{}, parent.LiteralArgs...), current.LiteralArgs...)
 	merged.Params = mergeParams(parent.Params, current.Params)
 	return merged, nil
@@ -54,10 +55,37 @@ func cloneProfile(p config.Profile) config.Profile {
 		Name:        p.Name,
 		Bin:         p.Bin,
 		Inherits:    p.Inherits,
+		Env:         copyEnv(p.Env),
 		LiteralArgs: append([]string{}, p.LiteralArgs...),
 		Params:      append([]config.ParamSpec{}, p.Params...),
 	}
 	return out
+}
+
+func copyEnv(src map[string]string) map[string]string {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make(map[string]string, len(src))
+	for key, value := range src {
+		dst[key] = value
+	}
+	return dst
+}
+
+func mergeEnv(parent, child map[string]string) map[string]string {
+	if len(parent) == 0 && len(child) == 0 {
+		return nil
+	}
+
+	merged := copyEnv(parent)
+	if merged == nil {
+		merged = make(map[string]string, len(child))
+	}
+	for key, value := range child {
+		merged[key] = value
+	}
+	return merged
 }
 
 func mergeParams(parent, child []config.ParamSpec) []config.ParamSpec {

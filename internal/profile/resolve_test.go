@@ -11,6 +11,7 @@ func TestResolveMergesLiteralArgsAndParams(t *testing.T) {
 		Profiles: map[string]config.Profile{
 			"base": {
 				Bin:         "/bin/base",
+				Env:         map[string]string{"APP_MODE": "debug", "DATA_DIR": "/tmp/base"},
 				LiteralArgs: []string{"--base"},
 				Params: []config.ParamSpec{
 					{Name: "data_dir", Kind: "string", Default: "/tmp/base"},
@@ -20,6 +21,7 @@ func TestResolveMergesLiteralArgsAndParams(t *testing.T) {
 			"child": {
 				Inherits:    "base",
 				Bin:         "/bin/child",
+				Env:         map[string]string{"APP_MODE": "release"},
 				LiteralArgs: []string{"--child"},
 				Params: []config.ParamSpec{
 					{Name: "entities", Kind: "list", Multi: true, Delimiter: ",", Values: []string{"item-1"}},
@@ -38,6 +40,9 @@ func TestResolveMergesLiteralArgsAndParams(t *testing.T) {
 	}
 	if len(got.LiteralArgs) != 2 || got.LiteralArgs[0] != "--base" || got.LiteralArgs[1] != "--child" {
 		t.Fatalf("literal args = %#v", got.LiteralArgs)
+	}
+	if got.Env["APP_MODE"] != "release" || got.Env["DATA_DIR"] != "/tmp/base" {
+		t.Fatalf("env = %#v", got.Env)
 	}
 	if len(got.Params) != 3 {
 		t.Fatalf("params len = %d", len(got.Params))

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func Load(path string) (*Config, error) {
@@ -44,6 +45,14 @@ func Load(path string) (*Config, error) {
 func validateProfile(profile Profile) error {
 	if profile.Bin == "" && profile.Inherits == "" {
 		return fmt.Errorf("bin or inherits is required")
+	}
+	for key := range profile.Env {
+		if key == "" {
+			return fmt.Errorf("env key is required")
+		}
+		if strings.Contains(key, "=") {
+			return fmt.Errorf("env key %q must not contain '='", key)
+		}
 	}
 
 	seen := map[string]struct{}{}

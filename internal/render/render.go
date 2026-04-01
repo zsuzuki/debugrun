@@ -20,6 +20,13 @@ func Argv(inv *invoke.Invocation, configDir string) []string {
 	return argv
 }
 
+func CommandString(inv *invoke.Invocation, configDir string) string {
+	parts := make([]string, 0, len(inv.Env)+1)
+	parts = append(parts, EnvAssignments(inv.Env)...)
+	parts = append(parts, ShellString(Argv(inv, configDir)))
+	return strings.Join(parts, " ")
+}
+
 func renderParamArgv(bound invoke.BoundParam) []string {
 	switch bound.Spec.Kind {
 	case "string":
@@ -94,6 +101,22 @@ func ShellString(argv []string) string {
 	return strings.Join(parts, " ")
 }
 
+func EnvAssignments(env map[string]string) []string {
+	if len(env) == 0 {
+		return nil
+	}
+	keys := make([]string, 0, len(env))
+	for key := range env {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	out := make([]string, 0, len(keys))
+	for _, key := range keys {
+		out = append(out, fmt.Sprintf("%s=%s", key, shellValue(env[key])))
+	}
+	return out
+}
+
 func FormatProfileList(cfg *config.Config) string {
 	return strings.Join(ProfileNames(cfg), "\n")
 }
@@ -128,9 +151,14 @@ func FormatParams(profile *config.Profile) string {
 	lines := []string{
 		fmt.Sprintf("Profile: %s", profile.Name),
 		fmt.Sprintf("Binary : %s", profile.Bin),
-		"",
-		"Params:",
 	}
+	if len(profile.Env) > 0 {
+		lines = append(lines, "", "Env:")
+		for _, entry := range EnvAssignments(profile.Env) {
+			lines = append(lines, "  "+entry)
+		}
+	}
+	lines = append(lines, "", "Params:")
 	if len(profile.Params) == 0 {
 		lines = append(lines, "  (none)")
 		return strings.Join(lines, "\n")
@@ -220,4 +248,15 @@ func isShellSafe(s string) bool {
 		}
 	}
 	return true
+}
+
+func shellValue(s string) string {
+	if s == "" {
+		return "''"
+	}
+	if isShellSafe(s) {
+		return s
+	}
+	escaped := strings.ReplaceAll(s, `'`, `'\''`)
+	return "'" + escaped + "'"
 }

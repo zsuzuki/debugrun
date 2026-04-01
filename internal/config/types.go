@@ -12,11 +12,12 @@ type GlobalConfig struct {
 }
 
 type Profile struct {
-	Name        string      `toml:"-"`
-	Bin         string      `toml:"bin"`
-	Inherits    string      `toml:"inherits"`
-	LiteralArgs []string    `toml:"literal_args"`
-	Params      []ParamSpec `toml:"params"`
+	Name        string            `toml:"-"`
+	Bin         string            `toml:"bin"`
+	Inherits    string            `toml:"inherits"`
+	Env         map[string]string `toml:"env"`
+	LiteralArgs []string          `toml:"literal_args"`
+	Params      []ParamSpec       `toml:"params"`
 }
 
 type ParamSpec struct {
