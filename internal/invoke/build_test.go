@@ -108,6 +108,47 @@ func TestBuildExplicitMultiListOverridesDefaultAllValues(t *testing.T) {
 	}
 }
 
+func TestBuildAddAppendsToDefaultList(t *testing.T) {
+	profile := &config.Profile{
+		Name: "main-app",
+		Bin:  "/bin/echo",
+		Params: []config.ParamSpec{
+			{Name: "dir", Kind: "list", Multi: true, Delimiter: ",", DefaultList: []string{"BASE"}},
+		},
+	}
+	parsed := &cli.Parsed{
+		ProfileName: "main-app",
+		RawParams:   []cli.RawParam{{Name: "dir", Value: "TMP,WORK", Append: true}},
+	}
+
+	inv, err := Build(profile, parsed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := inv.Params[0].Value.List; len(got) != 3 || got[0] != "BASE" || got[1] != "TMP" || got[2] != "WORK" {
+		t.Fatalf("dir add = %#v", got)
+	}
+}
+
+func TestBuildAddRejectsNonMultiList(t *testing.T) {
+	profile := &config.Profile{
+		Name: "main-app",
+		Bin:  "/bin/echo",
+		Params: []config.ParamSpec{
+			{Name: "region", Kind: "string"},
+		},
+	}
+	parsed := &cli.Parsed{
+		ProfileName: "main-app",
+		RawParams:   []cli.RawParam{{Name: "region", Value: "jp", Append: true}},
+	}
+
+	_, err := Build(profile, parsed)
+	if err == nil || err.Error() != `param "region" does not support -add` {
+		t.Fatalf("err = %v", err)
+	}
+}
+
 func TestValidateReturnsWarningsForCandidateMiss(t *testing.T) {
 	profile := &config.Profile{
 		Name: "main-app",

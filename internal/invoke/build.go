@@ -65,6 +65,14 @@ func Build(p *config.Profile, parsed *cli.Parsed) (*Invocation, error) {
 			return nil, err
 		}
 		spec := params[idx].Spec
+		if raw.Append {
+			if spec.Kind != "list" || !spec.Multi {
+				return nil, fmt.Errorf("param %q does not support -add", spec.Name)
+			}
+			params[idx].Value.List = append(params[idx].Value.List, value.List...)
+			seen[spec.Name] = true
+			continue
+		}
 		if spec.Kind == "list" && spec.Multi {
 			if seen[spec.Name] {
 				params[idx].Value.List = append(params[idx].Value.List, value.List...)

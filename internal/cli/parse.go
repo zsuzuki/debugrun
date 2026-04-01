@@ -21,8 +21,9 @@ const (
 )
 
 type RawParam struct {
-	Name  string
-	Value string
+	Name   string
+	Value  string
+	Append bool
 }
 
 type Parsed struct {
@@ -125,7 +126,15 @@ func parseProfileAction(action Action, args []string) (*Parsed, error) {
 		}
 	}
 
+	appendNext := false
 	for _, token := range rest[:dashdash] {
+		if token == "-add" {
+			if appendNext {
+				return nil, fmt.Errorf("expected name=value after -add")
+			}
+			appendNext = true
+			continue
+		}
 		name, value, ok := strings.Cut(token, "=")
 		if !ok || name == "" {
 			return nil, fmt.Errorf("expected name=value before --, got %q", token)
@@ -133,7 +142,11 @@ func parseProfileAction(action Action, args []string) (*Parsed, error) {
 		if value == "" {
 			return nil, fmt.Errorf("empty value is not allowed for %q", name)
 		}
-		parsed.RawParams = append(parsed.RawParams, RawParam{Name: name, Value: value})
+		parsed.RawParams = append(parsed.RawParams, RawParam{Name: name, Value: value, Append: appendNext})
+		appendNext = false
+	}
+	if appendNext {
+		return nil, fmt.Errorf("expected name=value after -add")
 	}
 
 	if dashdash < len(rest) {

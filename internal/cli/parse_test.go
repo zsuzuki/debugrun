@@ -24,3 +24,23 @@ func TestParseEditLastIndex(t *testing.T) {
 		t.Fatalf("parsed = %#v", parsed)
 	}
 }
+
+func TestParseAddModifier(t *testing.T) {
+	parsed, err := Parse([]string{"main-app", "-add", "dir=TMP", "dir=WORK"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(parsed.RawParams) != 2 {
+		t.Fatalf("raw params = %#v", parsed.RawParams)
+	}
+	if !parsed.RawParams[0].Append || parsed.RawParams[1].Append {
+		t.Fatalf("raw params = %#v", parsed.RawParams)
+	}
+}
+
+func TestParseAddModifierRequiresValue(t *testing.T) {
+	_, err := Parse([]string{"main-app", "-add"})
+	if err == nil || err.Error() != "expected name=value after -add" {
+		t.Fatalf("err = %v", err)
+	}
+}

@@ -55,6 +55,8 @@ multi = true
 
 `list` params with `multi = true` can be specified more than once on the `run` CLI. Repeated occurrences are appended in order, so `dir=VOL dir=TMP,WORK` becomes the same list as `dir=VOL,TMP,WORK`.
 
+If you want to append to an existing default instead of replacing it, use `-add` before a single `name=value`. For example, `run app01 -add dir=TMP` keeps the configured default list and appends `TMP`.
+
 If you want a `multi = true` list param to default to every configured candidate in `values`, set `default_all_values = true`.
 
 By default params render as `name=value`. You can control the emitted shape with:
@@ -179,6 +181,8 @@ values = ["alpha", "beta", "gamma"]
 `values` はデフォルトでは候補値として扱われます。リスト外の値を拒否したい場合は `strict_values = true` を指定します。
 
 `multi = true` の `list` param は、`run` 側の CLI で同じ `name=value` を複数回書けます。繰り返し指定した値は順番どおりに連結されるため、`dir=VOL dir=TMP,WORK` は `dir=VOL,TMP,WORK` と同じリストになります。
+
+既定値を上書きせずに追加したい場合は、1 個の `name=value` の直前に `-add` を付けます。例えば `run app01 -add dir=TMP` とすると、設定済みの既定リストを残したまま `TMP` を追加します。
 
 `multi = true` の `list` param で、`values` に入っている候補を未指定時の既定値としてそのまま使いたい場合は `default_all_values = true` を指定します。
 
