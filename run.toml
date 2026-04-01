@@ -1,0 +1,49 @@
+version = 1
+
+[global]
+history_file = ".run/history.jsonl"
+default_exec_mode = "exec"
+
+[profiles.main-app]
+bin = "build/app/main_app/Debug/main_app"
+
+[[profiles.main-app.params]]
+name = "data_dir"
+kind = "string"
+default = "/path/to/workdir/main-app-data"
+help = "Application data directory"
+
+[[profiles.main-app.params]]
+name = "config"
+kind = "string"
+default = "/path/to/config/main-app/config.toml"
+help = "Config file path"
+
+[[profiles.main-app.params]]
+name = "entities"
+kind = "list"
+multi = true
+delimiter = ","
+values = ["alpha", "beta", "gamma"]
+help = "Selected entities"
+
+[[profiles.main-app.params]]
+name = "fields"
+kind = "list"
+multi = true
+delimiter = ","
+values = ["status", "owner", "score"]
+help = "Selected fields"
+
+[profiles.main-app-release]
+inherits = "main-app"
+bin = "build/app/main_app/Release/main_app"
+
+[profiles.main-app-dbtest]
+inherits = "main-app"
+bin = "build/app/main_app_dbtest/Debug/main_app_dbtest"
+
+[profiles.main-app-gui]
+inherits = "main-app"
+bin = "build/app/main_app_gui/Debug/main_app_gui"
+literal_args = ["--gui"]

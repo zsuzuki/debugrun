@@ -1,0 +1,145 @@
+#compdef run
+
+_run_profile_names() {
+  local -a profiles
+  profiles=(${(f)"$($words[1] complete profiles 2>/dev/null)"})
+  _describe -t profiles 'profiles' profiles
+}
+
+_run_param_names() {
+  local profile=$1
+  local -a params
+  params=(${(f)"$($words[1] complete params "$profile" 2>/dev/null)"})
+  params=(${params/%/=})
+  _describe -t params 'params' params
+}
+
+_run_param_values() {
+  local profile=$1
+  local param=$2
+  local value_prefix=${3:-}
+  local -a values
+  values=(${(f)"$($words[1] complete values "$profile" "$param" 2>/dev/null)"})
+  if [[ -n $value_prefix ]]; then
+    values=(${values:#$value_prefix})
+  fi
+  _describe -t values 'values' values
+}
+
+_run_complete_exec_like() {
+  local cmd_index=$1
+  local profile_index=$2
+  local profile=${words[$profile_index]}
+  local current=${words[CURRENT]}
+
+  if (( CURRENT == profile_index )); then
+    _run_profile_names
+    return
+  fi
+
+  if (( CURRENT > profile_index )); then
+    local i
+    for (( i = profile_index + 1; i < CURRENT; i++ )); do
+      if [[ ${words[$i]} == '--' ]]; then
+        _normal
+        return
+      fi
+    done
+
+    if [[ $current == *=* ]]; then
+      local param=${current%%=*}
+      local raw_values=${current#*=}
+      if [[ $raw_values == *,* ]]; then
+        local prefix=${raw_values##*,}
+        _run_param_values "$profile" "$param" "$prefix"
+      else
+        _run_param_values "$profile" "$param"
+      fi
+      return
+    fi
+
+    if (( CURRENT > 1 )) && [[ ${words[CURRENT-1]} == '--' ]]; then
+      _normal
+      return
+    fi
+
+    _run_param_names "$profile"
+    return
+  fi
+}
+
+_run() {
+  local -a subcommands
+  subcommands=(
+    'list:list profiles'
+    'params:show profile parameters'
+    'show:print the resolved command line'
+    'exec:run a profile explicitly'
+    'complete:completion helper'
+    'last:show the most recent history entry'
+    'edit-last:print a reusable run command from history'
+    'repeat:rerun a previous history entry'
+    'history:list recorded history'
+  )
+
+  if (( CURRENT == 2 )); then
+    local -a profiles
+    profiles=(${(f)"$($words[1] complete profiles 2>/dev/null)"})
+    _describe -t subcommands 'subcommands' subcommands
+    _describe -t profiles 'profiles' profiles
+    return
+  fi
+
+  case ${words[2]} in
+    list|history|last)
+      return
+      ;;
+    repeat|edit-last)
+      _message 'history index'
+      return
+      ;;
+    params)
+      _run_complete_exec_like 2 3
+      return
+      ;;
+    show|exec)
+      _run_complete_exec_like 2 3
+      return
+      ;;
+    complete)
+      case $CURRENT in
+        3)
+          _describe -t topics 'topics' \
+            'profiles:list profile names' \
+            'params:list param names for a profile' \
+            'values:list candidate values for a param'
+          return
+          ;;
+        4)
+          case ${words[3]} in
+            profiles)
+              return
+              ;;
+            params|values)
+              _run_profile_names
+              return
+              ;;
+          esac
+          ;;
+        5)
+          if [[ ${words[3]} == values ]]; then
+            _run_param_names "${words[4]}"
+            return
+          fi
+          ;;
+      esac
+      return
+      ;;
+    *)
+      _run_complete_exec_like 1 2
+      return
+      ;;
+  esac
+}
+
+_run "$@"
