@@ -48,7 +48,7 @@ func TestArgvRendersSplitModeParams(t *testing.T) {
 		Bin: "/bin/echo",
 		Params: []invoke.BoundParam{
 			{Spec: config.ParamSpec{Name: "config", ArgName: "--config", ArgMode: "split", Kind: "string"}, Value: invoke.Value{Scalar: "/tmp/app.toml"}},
-			{Spec: config.ParamSpec{Name: "dir", ArgName: "-dir", ArgMode: "split", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"VOL", "TMP", "WORK"}}},
+			{Spec: config.ParamSpec{Name: "dir", ArgName: "-dir", ArgMode: "split", ListMode: "repeat", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"VOL", "TMP", "WORK"}}},
 		},
 	}
 
@@ -65,12 +65,14 @@ func TestArgvRendersDifferentArgModes(t *testing.T) {
 		Params: []invoke.BoundParam{
 			{Spec: config.ParamSpec{Name: "region", Kind: "string", ArgMode: "kv"}, Value: invoke.Value{Scalar: "jp"}},
 			{Spec: config.ParamSpec{Name: "config", ArgName: "--config", ArgMode: "equals", Kind: "string"}, Value: invoke.Value{Scalar: "/tmp/app.toml"}},
-			{Spec: config.ParamSpec{Name: "dir", ArgName: "-dir", ArgMode: "split", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"VOL", "TMP"}}},
+			{Spec: config.ParamSpec{Name: "tags", ArgName: "--tags", ArgMode: "equals", ListMode: "repeat", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"a", "b"}}},
+			{Spec: config.ParamSpec{Name: "fields", ArgName: "--fields", ArgMode: "split", ListMode: "join", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"status", "owner"}}},
+			{Spec: config.ParamSpec{Name: "dir", ArgName: "-dir", ArgMode: "split", ListMode: "repeat", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"VOL", "TMP"}}},
 		},
 	}
 
 	got := Argv(inv, "/tmp")
-	want := []string{"/bin/echo", "region=jp", "--config=/tmp/app.toml", "-dir", "VOL", "-dir", "TMP"}
+	want := []string{"/bin/echo", "region=jp", "--config=/tmp/app.toml", "--tags=a", "--tags=b", "--fields", "status,owner", "-dir", "VOL", "-dir", "TMP"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Argv() = %#v, want %#v", got, want)
 	}

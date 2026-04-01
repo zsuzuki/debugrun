@@ -38,13 +38,12 @@ func renderParamArgv(bound invoke.BoundParam) []string {
 		if len(bound.Value.List) == 0 {
 			return nil
 		}
+		if bound.Spec.ListMode == "repeat" {
+			return renderRepeatedListArgs(bound.Spec, bound.Value.List)
+		}
 		switch bound.Spec.ArgMode {
 		case "split":
-			argv := make([]string, 0, len(bound.Value.List)*2)
-			for _, item := range bound.Value.List {
-				argv = append(argv, bound.Spec.ArgName, item)
-			}
-			return argv
+			return []string{bound.Spec.ArgName, strings.Join(bound.Value.List, bound.Spec.Delimiter)}
 		case "equals":
 			return []string{fmt.Sprintf("%s=%s", bound.Spec.ArgName, strings.Join(bound.Value.List, bound.Spec.Delimiter))}
 		default:
@@ -52,6 +51,29 @@ func renderParamArgv(bound invoke.BoundParam) []string {
 		}
 	default:
 		return nil
+	}
+}
+
+func renderRepeatedListArgs(spec config.ParamSpec, values []string) []string {
+	switch spec.ArgMode {
+	case "split":
+		argv := make([]string, 0, len(values)*2)
+		for _, item := range values {
+			argv = append(argv, spec.ArgName, item)
+		}
+		return argv
+	case "equals":
+		argv := make([]string, 0, len(values))
+		for _, item := range values {
+			argv = append(argv, fmt.Sprintf("%s=%s", spec.ArgName, item))
+		}
+		return argv
+	default:
+		argv := make([]string, 0, len(values))
+		for _, item := range values {
+			argv = append(argv, fmt.Sprintf("%s=%s", spec.Name, item))
+		}
+		return argv
 	}
 }
 
@@ -120,6 +142,9 @@ func FormatParams(profile *config.Profile) string {
 		}
 		if spec.ArgMode != "" && spec.ArgMode != "kv" {
 			line += " mode=" + spec.ArgMode
+		}
+		if spec.Kind == "list" && spec.ListMode != "" && spec.ListMode != "join" {
+			line += " list=" + spec.ListMode
 		}
 		if spec.Kind == "string" && spec.Default != "" {
 			line += " default=" + spec.Default

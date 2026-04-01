@@ -67,6 +67,11 @@ func validateProfile(profile Profile) error {
 		default:
 			return fmt.Errorf("param %q: unsupported arg_mode %q", param.Name, param.ArgMode)
 		}
+		switch param.ListMode {
+		case "", "join", "repeat":
+		default:
+			return fmt.Errorf("param %q: unsupported list_mode %q", param.Name, param.ListMode)
+		}
 		if _, ok := seen[param.Name]; ok {
 			return fmt.Errorf("duplicate param %q", param.Name)
 		}
@@ -79,6 +84,9 @@ func validateProfile(profile Profile) error {
 			}
 			if param.DefaultAllValues {
 				return fmt.Errorf("param %q: default_all_values is only valid for kind=list", param.Name)
+			}
+			if param.ListMode != "" {
+				return fmt.Errorf("param %q: list_mode is only valid for kind=list", param.Name)
 			}
 			if param.Multi {
 				return fmt.Errorf("param %q: multi is only valid for kind=list", param.Name)
@@ -101,6 +109,16 @@ func validateProfile(profile Profile) error {
 			}
 			if !param.Multi {
 				param.Multi = false
+			}
+			if param.ListMode == "" {
+				if param.Multi && param.ArgMode != "kv" {
+					param.ListMode = "repeat"
+				} else {
+					param.ListMode = "join"
+				}
+			}
+			if param.ListMode == "repeat" && !param.Multi {
+				return fmt.Errorf("param %q: list_mode=repeat requires multi=true", param.Name)
 			}
 		default:
 			return fmt.Errorf("param %q: unsupported kind %q", param.Name, param.Kind)

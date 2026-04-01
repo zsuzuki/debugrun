@@ -63,6 +63,17 @@ By default params render as `name=value`. You can control the emitted shape with
 - `arg_mode = "equals"`: `arg_name=value`
 - `arg_mode = "split"`: `arg_name value`
 - `arg_name = "-dir"`: emitted argument name for `equals` or `split`
+- `list_mode = "join"`: list values are emitted once, joined with `delimiter`
+- `list_mode = "repeat"`: list values are emitted once per item
+
+For `kind = "list"`, `arg_mode` and `list_mode` are independent:
+
+- `kv` + `join` => `name=a,b,c`
+- `equals` + `join` => `-name=a,b,c`
+- `split` + `join` => `-name a,b,c`
+- `kv` + `repeat` => `name=a name=b name=c`
+- `equals` + `repeat` => `-name=a -name=b -name=c`
+- `split` + `repeat` => `-name a -name b -name c`
 
 Example:
 
@@ -71,13 +82,14 @@ Example:
 name = "dir"
 arg_name = "-dir"
 arg_mode = "split"
+list_mode = "repeat"
 kind = "list"
 multi = true
 values = ["VOL", "TMP", "WORK"]
 default_all_values = true
 ```
 
-If you want `-dir=VOL -dir=TMP`, use `arg_mode = "equals"` with the same `arg_name`.
+If you want `-dir=VOL -dir=TMP`, use `arg_mode = "equals"` with `list_mode = "repeat"`.
 
 You can use a few built-in variables in `run.toml` string fields such as `bin`, `literal_args`, `default`, `default_list`, `values`, and `global.history_file`:
 
@@ -176,8 +188,17 @@ param の最終 argv への描画方法は `arg_mode` で選べます。
 - `arg_mode = "equals"`: `arg_name=value`
 - `arg_mode = "split"`: `arg_name value`
 - `arg_name = "-dir"`: `equals` / `split` で使う実際の引数名
+- `list_mode = "join"`: list を 1 回だけ出して `delimiter` で連結する
+- `list_mode = "repeat"`: list の各要素を 1 回ずつ出す
 
-`-dir=VOL -dir=TMP` にしたい場合は `arg_mode = "equals"`、`-dir VOL -dir TMP` にしたい場合は `arg_mode = "split"` を使います。
+`kind = "list"` では `arg_mode` と `list_mode` を組み合わせて決めます。
+
+- `kv` + `join` => `name=a,b,c`
+- `equals` + `join` => `-name=a,b,c`
+- `split` + `join` => `-name a,b,c`
+- `kv` + `repeat` => `name=a name=b name=c`
+- `equals` + `repeat` => `-name=a -name=b -name=c`
+- `split` + `repeat` => `-name a -name b -name c`
 
 `run.toml` の文字列フィールドでは、`bin`、`literal_args`、`default`、`default_list`、`values`、`global.history_file` などでいくつかの組み込み変数を使えます。
 

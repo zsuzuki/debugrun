@@ -115,6 +115,8 @@ Params can also control how values are emitted to argv:
 - `arg_mode = "equals"` => `arg_name=value`
 - `arg_mode = "split"` => `arg_name value`
 - `arg_name` changes the emitted argument token for `equals` and `split`
+- `list_mode = "join"` => emit a list once with delimiter-joined items
+- `list_mode = "repeat"` => emit one argv occurrence per list item
 
 Inheritance behavior for `literal_args` is concatenation:
 

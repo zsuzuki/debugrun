@@ -36,6 +36,7 @@ func Expand(cfg *Config, ctx ExpandContext) *Config {
 				Name:             param.Name,
 				ArgName:          expandString(param.ArgName, ctx),
 				ArgMode:          param.ArgMode,
+				ListMode:         param.ListMode,
 				Kind:             param.Kind,
 				Required:         param.Required,
 				Multi:            param.Multi,
