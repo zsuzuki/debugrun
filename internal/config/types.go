@@ -21,6 +21,8 @@ type Profile struct {
 
 type ParamSpec struct {
 	Name         string   `toml:"name"`
+	ArgName      string   `toml:"arg_name"`
+	ArgMode      string   `toml:"arg_mode"`
 	Kind         string   `toml:"kind"`
 	Required     bool     `toml:"required"`
 	Multi        bool     `toml:"multi"`

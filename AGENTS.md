@@ -201,6 +201,7 @@ Rules:
 - child profiles override parent params by matching `name`
 - new child params append to the end
 - same param specified multiple times on CLI: last wins
+- except `kind=list` with `multi=true`, where repeated CLI occurrences append in order
 - empty values are rejected
 
 ## Runtime Model

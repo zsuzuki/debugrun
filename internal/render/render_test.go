@@ -6,6 +6,7 @@ import (
 
 	"debugrun/internal/config"
 	"debugrun/internal/history"
+	"debugrun/internal/invoke"
 )
 
 func TestParamHelpers(t *testing.T) {
@@ -39,5 +40,21 @@ func TestFormatReplayCommand(t *testing.T) {
 	want := "run main-app data_dir=/tmp/data fields=status,score -- --verbose '--path=/tmp/a b'"
 	if got != want {
 		t.Fatalf("FormatReplayCommand() = %q, want %q", got, want)
+	}
+}
+
+func TestArgvRendersSplitModeParams(t *testing.T) {
+	inv := &invoke.Invocation{
+		Bin: "/bin/echo",
+		Params: []invoke.BoundParam{
+			{Spec: config.ParamSpec{Name: "config", ArgName: "--config", ArgMode: "split", Kind: "string"}, Value: invoke.Value{Scalar: "/tmp/app.toml"}},
+			{Spec: config.ParamSpec{Name: "dir", ArgName: "-dir", ArgMode: "split", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"VOL", "TMP", "WORK"}}},
+		},
+	}
+
+	got := Argv(inv, "/tmp")
+	want := []string{"/bin/echo", "--config", "/tmp/app.toml", "-dir", "VOL", "-dir", "TMP", "-dir", "WORK"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("Argv() = %#v, want %#v", got, want)
 	}
 }

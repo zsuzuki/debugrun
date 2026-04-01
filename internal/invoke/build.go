@@ -35,6 +35,7 @@ type Warning struct {
 
 func Build(p *config.Profile, parsed *cli.Parsed) (*Invocation, error) {
 	index := make(map[string]int, len(p.Params))
+	seen := make(map[string]bool, len(p.Params))
 	params := make([]BoundParam, 0, len(p.Params))
 	for _, spec := range p.Params {
 		bound := BoundParam{Spec: spec}
@@ -61,7 +62,18 @@ func Build(p *config.Profile, parsed *cli.Parsed) (*Invocation, error) {
 		if err != nil {
 			return nil, err
 		}
+		spec := params[idx].Spec
+		if spec.Kind == "list" && spec.Multi {
+			if seen[spec.Name] {
+				params[idx].Value.List = append(params[idx].Value.List, value.List...)
+			} else {
+				params[idx].Value = value
+			}
+			seen[spec.Name] = true
+			continue
+		}
 		params[idx].Value = value
+		seen[spec.Name] = true
 	}
 
 	return &Invocation{

@@ -52,6 +52,17 @@ func validateProfile(profile Profile) error {
 		if param.Name == "" {
 			return fmt.Errorf("param name is required")
 		}
+		if param.ArgName == "" {
+			param.ArgName = param.Name
+		}
+		switch param.ArgMode {
+		case "", "kv", "split":
+			if param.ArgMode == "" {
+				param.ArgMode = "kv"
+			}
+		default:
+			return fmt.Errorf("param %q: unsupported arg_mode %q", param.Name, param.ArgMode)
+		}
 		if _, ok := seen[param.Name]; ok {
 			return fmt.Errorf("duplicate param %q", param.Name)
 		}

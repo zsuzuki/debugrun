@@ -13,20 +13,38 @@ import (
 func Argv(inv *invoke.Invocation, configDir string) []string {
 	argv := []string{invoke.ResolvedBin(inv, configDir)}
 	for _, bound := range inv.Params {
-		switch bound.Spec.Kind {
-		case "string":
-			if bound.Value.Scalar != "" {
-				argv = append(argv, fmt.Sprintf("%s=%s", bound.Spec.Name, bound.Value.Scalar))
-			}
-		case "list":
-			if len(bound.Value.List) > 0 {
-				argv = append(argv, fmt.Sprintf("%s=%s", bound.Spec.Name, strings.Join(bound.Value.List, bound.Spec.Delimiter)))
-			}
-		}
+		argv = append(argv, renderParamArgv(bound)...)
 	}
 	argv = append(argv, inv.LiteralArgs...)
 	argv = append(argv, inv.ExtraArgs...)
 	return argv
+}
+
+func renderParamArgv(bound invoke.BoundParam) []string {
+	switch bound.Spec.Kind {
+	case "string":
+		if bound.Value.Scalar == "" {
+			return nil
+		}
+		if bound.Spec.ArgMode == "split" {
+			return []string{bound.Spec.ArgName, bound.Value.Scalar}
+		}
+		return []string{fmt.Sprintf("%s=%s", bound.Spec.ArgName, bound.Value.Scalar)}
+	case "list":
+		if len(bound.Value.List) == 0 {
+			return nil
+		}
+		if bound.Spec.ArgMode == "split" {
+			argv := make([]string, 0, len(bound.Value.List)*2)
+			for _, item := range bound.Value.List {
+				argv = append(argv, bound.Spec.ArgName, item)
+			}
+			return argv
+		}
+		return []string{fmt.Sprintf("%s=%s", bound.Spec.ArgName, strings.Join(bound.Value.List, bound.Spec.Delimiter))}
+	default:
+		return nil
+	}
 }
 
 func ShellString(argv []string) string {
@@ -89,6 +107,12 @@ func FormatParams(profile *config.Profile) string {
 	}
 	for _, spec := range profile.Params {
 		line := fmt.Sprintf("  %-10s %-6s", spec.Name, spec.Kind)
+		if spec.ArgName != "" && spec.ArgName != spec.Name {
+			line += " arg=" + spec.ArgName
+		}
+		if spec.ArgMode == "split" {
+			line += " mode=split"
+		}
 		if spec.Kind == "string" && spec.Default != "" {
 			line += " default=" + spec.Default
 		}
