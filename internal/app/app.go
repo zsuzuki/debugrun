@@ -51,6 +51,11 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, err)
 		return 1
 	}
+	cfg = config.Expand(cfg, config.ExpandContext{
+		HomeDir:   resolveHomeDir(),
+		Cwd:       startDir,
+		ConfigDir: configDir,
+	})
 
 	switch parsed.Action {
 	case cli.ActionList:
@@ -114,7 +119,7 @@ func runInvocation(parsed *cli.Parsed, cfg *config.Config, configDir string, std
 }
 
 func runLast(configPath string, stdout, stderr io.Writer) int {
-	cfg, err := config.Load(configPath)
+	cfg, err := loadRuntimeConfig(configPath)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
@@ -129,7 +134,7 @@ func runLast(configPath string, stdout, stderr io.Writer) int {
 }
 
 func runHistory(configPath string, stdout, stderr io.Writer) int {
-	cfg, err := config.Load(configPath)
+	cfg, err := loadRuntimeConfig(configPath)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
@@ -146,7 +151,7 @@ func runHistory(configPath string, stdout, stderr io.Writer) int {
 }
 
 func runEditLast(index int, configPath string, stdout, stderr io.Writer) int {
-	cfg, err := config.Load(configPath)
+	cfg, err := loadRuntimeConfig(configPath)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
@@ -161,7 +166,7 @@ func runEditLast(index int, configPath string, stdout, stderr io.Writer) int {
 }
 
 func runRepeat(index int, configPath, configDir string, stdin io.Reader, stdout, stderr io.Writer) int {
-	cfg, err := config.Load(configPath)
+	cfg, err := loadRuntimeConfig(configPath)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
@@ -237,6 +242,32 @@ func joinList(items []string) string {
 		out += "," + item
 	}
 	return out
+}
+
+func loadRuntimeConfig(configPath string) (*config.Config, error) {
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	return config.Expand(cfg, config.ExpandContext{
+		HomeDir:   resolveHomeDir(),
+		Cwd:       cwd,
+		ConfigDir: filepath.Dir(configPath),
+	}), nil
+}
+
+func resolveHomeDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return home
 }
 
 func printWarnings(w io.Writer, warnings []invoke.Warning) {

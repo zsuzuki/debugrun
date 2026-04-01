@@ -10,13 +10,13 @@ bin = "build/app/main_app/Debug/main_app"
 [[profiles.main-app.params]]
 name = "data_dir"
 kind = "string"
-default = "/path/to/workdir/main-app-data"
+default = "${CWD}/.data/main-app"
 help = "Application data directory"
 
 [[profiles.main-app.params]]
 name = "config"
 kind = "string"
-default = "/path/to/config/main-app/config.toml"
+default = "${HOME}/.config/main-app/config.toml"
 help = "Config file path"
 
 [[profiles.main-app.params]]
