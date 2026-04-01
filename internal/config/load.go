@@ -33,7 +33,7 @@ func Load(path string) (*Config, error) {
 
 	for name, profile := range cfg.Profiles {
 		profile.Name = name
-		if err := validateProfile(profile); err != nil {
+		if err := validateProfile(&profile, profile.Inherits != ""); err != nil {
 			return nil, fmt.Errorf("profile %q: %w", name, err)
 		}
 		cfg.Profiles[name] = profile
@@ -42,7 +42,7 @@ func Load(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-func validateProfile(profile Profile) error {
+func validateProfile(profile *Profile, allowPartialParams bool) error {
 	if profile.Bin == "" && profile.Inherits == "" {
 		return fmt.Errorf("bin or inherits is required")
 	}
@@ -85,6 +85,11 @@ func validateProfile(profile Profile) error {
 			return fmt.Errorf("duplicate param %q", param.Name)
 		}
 		seen[param.Name] = struct{}{}
+
+		if param.Kind == "" && allowPartialParams {
+			profile.Params[i] = *param
+			continue
+		}
 
 		switch param.Kind {
 		case "string":
@@ -137,4 +142,8 @@ func validateProfile(profile Profile) error {
 	}
 
 	return nil
+}
+
+func FinalizeProfile(profile *Profile) error {
+	return validateProfile(profile, false)
 }

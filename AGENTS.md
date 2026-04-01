@@ -208,7 +208,8 @@ Supported fields:
 Rules:
 
 - `params` render in definition order
-- child profiles override parent params by matching `name`
+- child profiles match parent params by `name`
+- when a child defines the same param, explicitly set fields override and unspecified fields are inherited from the parent
 - new child params append to the end
 - same param specified multiple times on CLI: last wins
 - except `kind=list` with `multi=true`, where repeated CLI occurrences append in order

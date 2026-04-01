@@ -110,6 +110,8 @@ env = { APP_MODE = "debug", DATA_DIR = "${CWD}/.data" }
 
 Child profiles inherit parent `env` values and can override individual keys.
 
+For params, child profiles match by `name`. If a child defines the same param, only the fields it explicitly sets are replaced; unspecified fields are inherited from the parent.
+
 ## Completion helpers
 
 These commands print one item per line for shell integration:

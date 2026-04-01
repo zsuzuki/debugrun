@@ -13,6 +13,9 @@ func Resolve(cfg *config.Config, name string) (*config.Profile, error) {
 		return nil, err
 	}
 	resolved.Name = name
+	if err := config.FinalizeProfile(&resolved); err != nil {
+		return nil, fmt.Errorf("profile %q: %w", name, err)
+	}
 	return &resolved, nil
 }
 
@@ -97,7 +100,7 @@ func mergeParams(parent, child []config.ParamSpec) []config.ParamSpec {
 
 	for _, param := range child {
 		if idx, ok := index[param.Name]; ok {
-			merged[idx] = param
+			merged[idx] = param.MergeOver(merged[idx])
 			continue
 		}
 		index[param.Name] = len(merged)

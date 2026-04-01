@@ -33,7 +33,7 @@ func Expand(cfg *Config, ctx ExpandContext) *Config {
 		}
 
 		for _, param := range profile.Params {
-			expanded.Params = append(expanded.Params, ParamSpec{
+			expandedParam := ParamSpec{
 				Name:             param.Name,
 				ArgName:          expandString(param.ArgName, ctx),
 				ArgMode:          param.ArgMode,
@@ -48,7 +48,8 @@ func Expand(cfg *Config, ctx ExpandContext) *Config {
 				Default:          expandString(param.Default, ctx),
 				DefaultList:      expandSlice(param.DefaultList, ctx),
 				DefaultAllValues: param.DefaultAllValues,
-			})
+			}.WithPresenceCopiedFrom(param)
+			expanded.Params = append(expanded.Params, expandedParam)
 		}
 
 		out.Profiles[name] = expanded

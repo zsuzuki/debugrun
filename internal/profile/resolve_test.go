@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"debugrun/internal/config"
@@ -52,5 +54,60 @@ func TestResolveMergesLiteralArgsAndParams(t *testing.T) {
 	}
 	if got.Params[2].Name != "fields" {
 		t.Fatalf("last param = %q", got.Params[2].Name)
+	}
+}
+
+func TestResolveInheritsUnspecifiedParamFields(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, "run.toml")
+	content := `
+version = 1
+
+[profiles.base]
+bin = "/bin/base"
+
+[[profiles.base.params]]
+name = "dir"
+kind = "list"
+multi = true
+delimiter = ","
+arg_name = "-dir"
+arg_mode = "equals"
+list_mode = "repeat"
+default_list = ["BASE"]
+values = ["A", "B"]
+
+[profiles.child]
+inherits = "base"
+bin = "/bin/child"
+
+[[profiles.child.params]]
+name = "dir"
+default_list = ["CHILD"]
+`
+	if err := os.WriteFile(configPath, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := Resolve(cfg, "child")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Params[0].Kind != "list" || !got.Params[0].Multi {
+		t.Fatalf("param kind/multi = %#v", got.Params[0])
+	}
+	if got.Params[0].ArgMode != "equals" || got.Params[0].ListMode != "repeat" {
+		t.Fatalf("param modes = %#v", got.Params[0])
+	}
+	if len(got.Params[0].DefaultList) != 1 || got.Params[0].DefaultList[0] != "CHILD" {
+		t.Fatalf("default_list = %#v", got.Params[0].DefaultList)
+	}
+	if len(got.Params[0].Values) != 2 || got.Params[0].Values[0] != "A" || got.Params[0].Values[1] != "B" {
+		t.Fatalf("values = %#v", got.Params[0].Values)
 	}
 }
