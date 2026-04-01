@@ -119,6 +119,9 @@ func FormatParams(profile *config.Profile) string {
 		if spec.Kind == "list" && len(spec.DefaultList) > 0 {
 			line += " default=" + strings.Join(spec.DefaultList, spec.Delimiter)
 		}
+		if spec.Kind == "list" && spec.DefaultAllValues {
+			line += " default=all-values"
+		}
 		if len(spec.Values) > 0 {
 			line += " values=" + strings.Join(spec.Values, ",")
 		}

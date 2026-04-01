@@ -73,12 +73,24 @@ func validateProfile(profile Profile) error {
 			if len(param.DefaultList) > 0 {
 				return fmt.Errorf("param %q: default_list is only valid for kind=list", param.Name)
 			}
+			if param.DefaultAllValues {
+				return fmt.Errorf("param %q: default_all_values is only valid for kind=list", param.Name)
+			}
 			if param.Multi {
 				return fmt.Errorf("param %q: multi is only valid for kind=list", param.Name)
 			}
 		case "list":
 			if param.Default != "" {
 				return fmt.Errorf("param %q: default is only valid for kind=string", param.Name)
+			}
+			if param.DefaultAllValues && len(param.DefaultList) > 0 {
+				return fmt.Errorf("param %q: default_all_values and default_list cannot both be set", param.Name)
+			}
+			if param.DefaultAllValues && !param.Multi {
+				return fmt.Errorf("param %q: default_all_values requires multi=true", param.Name)
+			}
+			if param.DefaultAllValues && len(param.Values) == 0 {
+				return fmt.Errorf("param %q: default_all_values requires values", param.Name)
 			}
 			if param.Delimiter == "" {
 				param.Delimiter = ","

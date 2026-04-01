@@ -189,6 +189,7 @@ Supported fields:
 - `required`
 - `default` for `string`
 - `default_list` for `list`
+- `default_all_values` for `list`
 - `multi`
 - `delimiter`
 - `values`

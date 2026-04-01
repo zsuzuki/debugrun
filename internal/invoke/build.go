@@ -47,6 +47,8 @@ func Build(p *config.Profile, parsed *cli.Parsed) (*Invocation, error) {
 		case "list":
 			if len(spec.DefaultList) > 0 {
 				bound.Value = Value{List: append([]string{}, spec.DefaultList...)}
+			} else if spec.DefaultAllValues && len(spec.Values) > 0 {
+				bound.Value = Value{List: append([]string{}, spec.Values...)}
 			}
 		}
 		index[spec.Name] = len(params)

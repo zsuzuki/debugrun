@@ -20,16 +20,17 @@ type Profile struct {
 }
 
 type ParamSpec struct {
-	Name         string   `toml:"name"`
-	ArgName      string   `toml:"arg_name"`
-	ArgMode      string   `toml:"arg_mode"`
-	Kind         string   `toml:"kind"`
-	Required     bool     `toml:"required"`
-	Multi        bool     `toml:"multi"`
-	Delimiter    string   `toml:"delimiter"`
-	Values       []string `toml:"values"`
-	StrictValues bool     `toml:"strict_values"`
-	Help         string   `toml:"help"`
-	Default      string   `toml:"default"`
-	DefaultList  []string `toml:"default_list"`
+	Name             string   `toml:"name"`
+	ArgName          string   `toml:"arg_name"`
+	ArgMode          string   `toml:"arg_mode"`
+	Kind             string   `toml:"kind"`
+	Required         bool     `toml:"required"`
+	Multi            bool     `toml:"multi"`
+	Delimiter        string   `toml:"delimiter"`
+	Values           []string `toml:"values"`
+	StrictValues     bool     `toml:"strict_values"`
+	Help             string   `toml:"help"`
+	Default          string   `toml:"default"`
+	DefaultList      []string `toml:"default_list"`
+	DefaultAllValues bool     `toml:"default_all_values"`
 }

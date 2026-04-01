@@ -55,10 +55,25 @@ multi = true
 
 `list` params with `multi = true` can be specified more than once on the `run` CLI. Repeated occurrences are appended in order, so `dir=VOL dir=TMP,WORK` becomes the same list as `dir=VOL,TMP,WORK`.
 
+If you want a `multi = true` list param to default to every configured candidate in `values`, set `default_all_values = true`.
+
 By default params render as `name=value`. To emit conventional flag/value argv pairs, set:
 
 - `arg_name = "-dir"` to change the emitted argument name
 - `arg_mode = "split"` to render as `-dir VOL -dir TMP`
+
+Example:
+
+```toml
+[[profiles.app01.params]]
+name = "dir"
+arg_name = "-dir"
+arg_mode = "split"
+kind = "list"
+multi = true
+values = ["VOL", "TMP", "WORK"]
+default_all_values = true
+```
 
 You can use a few built-in variables in `run.toml` string fields such as `bin`, `literal_args`, `default`, `default_list`, `values`, and `global.history_file`:
 
@@ -148,6 +163,8 @@ values = ["alpha", "beta", "gamma"]
 `values` はデフォルトでは候補値として扱われます。リスト外の値を拒否したい場合は `strict_values = true` を指定します。
 
 `multi = true` の `list` param は、`run` 側の CLI で同じ `name=value` を複数回書けます。繰り返し指定した値は順番どおりに連結されるため、`dir=VOL dir=TMP,WORK` は `dir=VOL,TMP,WORK` と同じリストになります。
+
+`multi = true` の `list` param で、`values` に入っている候補を未指定時の既定値としてそのまま使いたい場合は `default_all_values = true` を指定します。
 
 param はデフォルトでは `name=value` として最終 argv に描画されます。通常の `-flag value` 形式で出したい場合は次を指定します。
 

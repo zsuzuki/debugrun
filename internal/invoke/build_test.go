@@ -67,6 +67,47 @@ func TestBuildAppendsRepeatedMultiListParams(t *testing.T) {
 	}
 }
 
+func TestBuildUsesAllValuesAsDefaultForMultiList(t *testing.T) {
+	profile := &config.Profile{
+		Name: "main-app",
+		Bin:  "/bin/echo",
+		Params: []config.ParamSpec{
+			{Name: "dir", Kind: "list", Multi: true, Delimiter: ",", Values: []string{"VOL", "TMP", "WORK"}, DefaultAllValues: true},
+		},
+	}
+	parsed := &cli.Parsed{ProfileName: "main-app"}
+
+	inv, err := Build(profile, parsed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := inv.Params[0].Value.List; len(got) != 3 || got[0] != "VOL" || got[1] != "TMP" || got[2] != "WORK" {
+		t.Fatalf("dir default = %#v", got)
+	}
+}
+
+func TestBuildExplicitMultiListOverridesDefaultAllValues(t *testing.T) {
+	profile := &config.Profile{
+		Name: "main-app",
+		Bin:  "/bin/echo",
+		Params: []config.ParamSpec{
+			{Name: "dir", Kind: "list", Multi: true, Delimiter: ",", Values: []string{"VOL", "TMP", "WORK"}, DefaultAllValues: true},
+		},
+	}
+	parsed := &cli.Parsed{
+		ProfileName: "main-app",
+		RawParams:   []cli.RawParam{{Name: "dir", Value: "TMP"}},
+	}
+
+	inv, err := Build(profile, parsed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := inv.Params[0].Value.List; len(got) != 1 || got[0] != "TMP" {
+		t.Fatalf("dir override = %#v", got)
+	}
+}
+
 func TestValidateReturnsWarningsForCandidateMiss(t *testing.T) {
 	profile := &config.Profile{
 		Name: "main-app",
