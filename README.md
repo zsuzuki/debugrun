@@ -57,10 +57,12 @@ multi = true
 
 If you want a `multi = true` list param to default to every configured candidate in `values`, set `default_all_values = true`.
 
-By default params render as `name=value`. To emit conventional flag/value argv pairs, set:
+By default params render as `name=value`. You can control the emitted shape with:
 
-- `arg_name = "-dir"` to change the emitted argument name
-- `arg_mode = "split"` to render as `-dir VOL -dir TMP`
+- `arg_mode = "kv"`: `name=value`
+- `arg_mode = "equals"`: `arg_name=value`
+- `arg_mode = "split"`: `arg_name value`
+- `arg_name = "-dir"`: emitted argument name for `equals` or `split`
 
 Example:
 
@@ -74,6 +76,8 @@ multi = true
 values = ["VOL", "TMP", "WORK"]
 default_all_values = true
 ```
+
+If you want `-dir=VOL -dir=TMP`, use `arg_mode = "equals"` with the same `arg_name`.
 
 You can use a few built-in variables in `run.toml` string fields such as `bin`, `literal_args`, `default`, `default_list`, `values`, and `global.history_file`:
 
@@ -166,10 +170,14 @@ values = ["alpha", "beta", "gamma"]
 
 `multi = true` の `list` param で、`values` に入っている候補を未指定時の既定値としてそのまま使いたい場合は `default_all_values = true` を指定します。
 
-param はデフォルトでは `name=value` として最終 argv に描画されます。通常の `-flag value` 形式で出したい場合は次を指定します。
+param の最終 argv への描画方法は `arg_mode` で選べます。
 
-- `arg_name = "-dir"`: 実際に出力する引数名を変える
-- `arg_mode = "split"`: `-dir VOL -dir TMP` のように分割して描画する
+- `arg_mode = "kv"`: `name=value`
+- `arg_mode = "equals"`: `arg_name=value`
+- `arg_mode = "split"`: `arg_name value`
+- `arg_name = "-dir"`: `equals` / `split` で使う実際の引数名
+
+`-dir=VOL -dir=TMP` にしたい場合は `arg_mode = "equals"`、`-dir VOL -dir TMP` にしたい場合は `arg_mode = "split"` を使います。
 
 `run.toml` の文字列フィールドでは、`bin`、`literal_args`、`default`、`default_list`、`values`、`global.history_file` などでいくつかの組み込み変数を使えます。
 

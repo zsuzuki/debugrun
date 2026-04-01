@@ -58,3 +58,20 @@ func TestArgvRendersSplitModeParams(t *testing.T) {
 		t.Fatalf("Argv() = %#v, want %#v", got, want)
 	}
 }
+
+func TestArgvRendersDifferentArgModes(t *testing.T) {
+	inv := &invoke.Invocation{
+		Bin: "/bin/echo",
+		Params: []invoke.BoundParam{
+			{Spec: config.ParamSpec{Name: "region", Kind: "string", ArgMode: "kv"}, Value: invoke.Value{Scalar: "jp"}},
+			{Spec: config.ParamSpec{Name: "config", ArgName: "--config", ArgMode: "equals", Kind: "string"}, Value: invoke.Value{Scalar: "/tmp/app.toml"}},
+			{Spec: config.ParamSpec{Name: "dir", ArgName: "-dir", ArgMode: "split", Kind: "list", Multi: true, Delimiter: ","}, Value: invoke.Value{List: []string{"VOL", "TMP"}}},
+		},
+	}
+
+	got := Argv(inv, "/tmp")
+	want := []string{"/bin/echo", "region=jp", "--config=/tmp/app.toml", "-dir", "VOL", "-dir", "TMP"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("Argv() = %#v, want %#v", got, want)
+	}
+}

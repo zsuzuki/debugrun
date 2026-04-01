@@ -109,6 +109,13 @@ Example:
 literal_args = ["--gui"]
 ```
 
+Params can also control how values are emitted to argv:
+
+- `arg_mode = "kv"` => `name=value`
+- `arg_mode = "equals"` => `arg_name=value`
+- `arg_mode = "split"` => `arg_name value`
+- `arg_name` changes the emitted argument token for `equals` and `split`
+
 Inheritance behavior for `literal_args` is concatenation:
 
 - parent args first

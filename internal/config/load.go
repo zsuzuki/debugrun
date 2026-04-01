@@ -56,9 +56,13 @@ func validateProfile(profile Profile) error {
 			param.ArgName = param.Name
 		}
 		switch param.ArgMode {
-		case "", "kv", "split":
+		case "", "kv", "equals", "split":
 			if param.ArgMode == "" {
-				param.ArgMode = "kv"
+				if param.ArgName != param.Name {
+					param.ArgMode = "equals"
+				} else {
+					param.ArgMode = "kv"
+				}
 			}
 		default:
 			return fmt.Errorf("param %q: unsupported arg_mode %q", param.Name, param.ArgMode)
