@@ -14,14 +14,14 @@ func TestParamHelpers(t *testing.T) {
 		Name: "main-app",
 		Params: []config.ParamSpec{
 			{Name: "data_dir", Kind: "string"},
-			{Name: "fields", Kind: "list", Values: []string{"status", "score"}},
+			{Name: "fields", Alias: "f", Kind: "list", Values: []string{"status", "score"}},
 		},
 	}
 
-	if got := ParamNames(profile); !reflect.DeepEqual(got, []string{"data_dir", "fields"}) {
+	if got := ParamNames(profile); !reflect.DeepEqual(got, []string{"data_dir", "fields", "f"}) {
 		t.Fatalf("ParamNames() = %#v", got)
 	}
-	if got := ParamValues(profile, "fields"); !reflect.DeepEqual(got, []string{"status", "score"}) {
+	if got := ParamValues(profile, "f"); !reflect.DeepEqual(got, []string{"status", "score"}) {
 		t.Fatalf("ParamValues() = %#v", got)
 	}
 }

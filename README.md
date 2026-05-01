@@ -39,6 +39,7 @@ default = "/path/to/workdir/main-app-data"
 
 [[profiles.main-app.params]]
 name = "entities"
+alias = "e"
 kind = "list"
 multi = true
 delimiter = ","
@@ -53,6 +54,8 @@ multi = true
 ```
 
 `values` are treated as suggestions by default. Set `strict_values = true` to reject values outside that list.
+
+Set `alias = "e"` on a param to allow the shorter CLI spelling too. For example, a param named `entities` with alias `e` accepts both `entities=alpha` and `e=alpha`; history and replay output still use the canonical `name`.
 
 `list` params with `multi = true` can be specified more than once on the `run` CLI. Repeated occurrences are appended in order, so `dir=VOL dir=TMP,WORK` becomes the same list as `dir=VOL,TMP,WORK`.
 
@@ -186,6 +189,7 @@ default = "/path/to/workdir/main-app-data"
 
 [[profiles.main-app.params]]
 name = "entities"
+alias = "e"
 kind = "list"
 multi = true
 delimiter = ","
@@ -193,6 +197,8 @@ values = ["alpha", "beta", "gamma"]
 ```
 
 `values` はデフォルトでは候補値として扱われます。リスト外の値を拒否したい場合は `strict_values = true` を指定します。
+
+param に `alias = "e"` を設定すると、CLI では短い別名も使えます。例えば `entities` という param に alias `e` がある場合、`entities=alpha` と `e=alpha` の両方を受け付けます。履歴と replay 表示では canonical な `name` を使います。
 
 `multi = true` の `list` param は、`run` 側の CLI で同じ `name=value` を複数回書けます。繰り返し指定した値は順番どおりに連結されるため、`dir=VOL dir=TMP,WORK` は `dir=VOL,TMP,WORK` と同じリストになります。
 

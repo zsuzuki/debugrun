@@ -68,6 +68,7 @@ bin = "/bin/base"
 
 [[profiles.base.params]]
 name = "dir"
+alias = "d"
 kind = "list"
 multi = true
 delimiter = ","
@@ -100,6 +101,9 @@ default_list = ["CHILD"]
 	}
 	if got.Params[0].Kind != "list" || !got.Params[0].Multi {
 		t.Fatalf("param kind/multi = %#v", got.Params[0])
+	}
+	if got.Params[0].Alias != "d" {
+		t.Fatalf("param alias = %q", got.Params[0].Alias)
 	}
 	if got.Params[0].ArgMode != "equals" || got.Params[0].ListMode != "repeat" {
 		t.Fatalf("param modes = %#v", got.Params[0])

@@ -24,6 +24,7 @@ type Profile struct {
 
 type ParamSpec struct {
 	Name             string   `toml:"name"`
+	Alias            string   `toml:"alias"`
 	ArgName          string   `toml:"arg_name"`
 	ArgMode          string   `toml:"arg_mode"`
 	ListMode         string   `toml:"list_mode"`
@@ -39,6 +40,7 @@ type ParamSpec struct {
 	DefaultAllValues bool     `toml:"default_all_values"`
 
 	hasArgName          bool
+	hasAlias            bool
 	hasArgMode          bool
 	hasListMode         bool
 	hasKind             bool
@@ -66,6 +68,14 @@ func (p *ParamSpec) UnmarshalTOML(data any) error {
 			return fmt.Errorf("name must be a string")
 		}
 		out.Name = s
+	}
+	if value, ok := m["alias"]; ok {
+		s, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("alias must be a string")
+		}
+		out.Alias = s
+		out.hasAlias = true
 	}
 	if value, ok := m["arg_name"]; ok {
 		s, ok := value.(string)
@@ -199,6 +209,9 @@ func (child ParamSpec) MergeOver(parent ParamSpec) ParamSpec {
 
 	merged := parent
 	merged.Name = child.Name
+	if child.hasAlias {
+		merged.Alias = child.Alias
+	}
 	if child.hasArgName {
 		merged.ArgName = child.ArgName
 	}
@@ -242,6 +255,7 @@ func (child ParamSpec) MergeOver(parent ParamSpec) ParamSpec {
 }
 
 func (p ParamSpec) WithPresenceCopiedFrom(src ParamSpec) ParamSpec {
+	p.hasAlias = src.hasAlias
 	p.hasArgName = src.hasArgName
 	p.hasArgMode = src.hasArgMode
 	p.hasListMode = src.hasListMode
@@ -259,7 +273,7 @@ func (p ParamSpec) WithPresenceCopiedFrom(src ParamSpec) ParamSpec {
 }
 
 func (p ParamSpec) hasExplicitOverrides() bool {
-	return p.hasArgName || p.hasArgMode || p.hasListMode || p.hasKind ||
+	return p.hasAlias || p.hasArgName || p.hasArgMode || p.hasListMode || p.hasKind ||
 		p.hasRequired || p.hasMulti || p.hasDelimiter || p.hasValues ||
 		p.hasStrictValues || p.hasHelp || p.hasDefault || p.hasDefaultList ||
 		p.hasDefaultAllValues

@@ -53,6 +53,9 @@ func Build(p *config.Profile, parsed *cli.Parsed) (*Invocation, error) {
 			}
 		}
 		index[spec.Name] = len(params)
+		if spec.Alias != "" {
+			index[spec.Alias] = len(params)
+		}
 		params = append(params, bound)
 	}
 

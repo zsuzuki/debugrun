@@ -61,6 +61,9 @@ func validateProfile(profile *Profile, allowPartialParams bool) error {
 		if param.Name == "" {
 			return fmt.Errorf("param name is required")
 		}
+		if strings.Contains(param.Alias, "=") {
+			return fmt.Errorf("param %q: alias must not contain '='", param.Name)
+		}
 		if param.ArgName == "" {
 			param.ArgName = param.Name
 		}
@@ -85,6 +88,15 @@ func validateProfile(profile *Profile, allowPartialParams bool) error {
 			return fmt.Errorf("duplicate param %q", param.Name)
 		}
 		seen[param.Name] = struct{}{}
+		if param.Alias != "" {
+			if param.Alias == param.Name {
+				return fmt.Errorf("param %q: alias must differ from name", param.Name)
+			}
+			if _, ok := seen[param.Alias]; ok {
+				return fmt.Errorf("duplicate param alias %q", param.Alias)
+			}
+			seen[param.Alias] = struct{}{}
+		}
 
 		if param.Kind == "" && allowPartialParams {
 			profile.Params[i] = *param

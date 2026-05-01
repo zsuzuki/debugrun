@@ -35,6 +35,7 @@ func Expand(cfg *Config, ctx ExpandContext) *Config {
 		for _, param := range profile.Params {
 			expandedParam := ParamSpec{
 				Name:             param.Name,
+				Alias:            param.Alias,
 				ArgName:          expandString(param.ArgName, ctx),
 				ArgMode:          param.ArgMode,
 				ListMode:         param.ListMode,

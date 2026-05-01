@@ -131,16 +131,19 @@ func ProfileNames(cfg *config.Config) []string {
 }
 
 func ParamNames(profile *config.Profile) []string {
-	names := make([]string, 0, len(profile.Params))
+	names := make([]string, 0, len(profile.Params)*2)
 	for _, spec := range profile.Params {
 		names = append(names, spec.Name)
+		if spec.Alias != "" {
+			names = append(names, spec.Alias)
+		}
 	}
 	return names
 }
 
 func ParamValues(profile *config.Profile, paramName string) []string {
 	for _, spec := range profile.Params {
-		if spec.Name == paramName {
+		if spec.Name == paramName || spec.Alias == paramName {
 			return append([]string{}, spec.Values...)
 		}
 	}
@@ -165,6 +168,9 @@ func FormatParams(profile *config.Profile) string {
 	}
 	for _, spec := range profile.Params {
 		line := fmt.Sprintf("  %-10s %-6s", spec.Name, spec.Kind)
+		if spec.Alias != "" {
+			line += " alias=" + spec.Alias
+		}
 		if spec.ArgName != "" && spec.ArgName != spec.Name {
 			line += " arg=" + spec.ArgName
 		}

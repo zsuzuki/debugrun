@@ -42,6 +42,31 @@ func TestBuildAppliesDefaultsAndOverrides(t *testing.T) {
 	}
 }
 
+func TestBuildAcceptsParamAlias(t *testing.T) {
+	profile := &config.Profile{
+		Name: "main-app",
+		Bin:  "/bin/echo",
+		Params: []config.ParamSpec{
+			{Name: "value", Alias: "v", Kind: "string"},
+		},
+	}
+	parsed := &cli.Parsed{
+		ProfileName: "main-app",
+		RawParams:   []cli.RawParam{{Name: "v", Value: "1"}},
+	}
+
+	inv, err := Build(profile, parsed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if inv.Params[0].Value.Scalar != "1" {
+		t.Fatalf("value = %q", inv.Params[0].Value.Scalar)
+	}
+	if inv.Params[0].Spec.Name != "value" {
+		t.Fatalf("canonical name = %q", inv.Params[0].Spec.Name)
+	}
+}
+
 func TestBuildAppendsRepeatedMultiListParams(t *testing.T) {
 	profile := &config.Profile{
 		Name: "main-app",
