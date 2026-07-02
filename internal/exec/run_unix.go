@@ -15,6 +15,8 @@ const shutdownGrace = 500 * time.Millisecond
 
 func Run(argv []string, env map[string]string, stdin io.Reader, stdout, stderr io.Writer) error {
 	cmd := exec.Command(argv[0], argv[1:]...)
+	stdout = wrapDemangler(stdout)
+	stderr = wrapDemangler(stderr)
 	cmd.Stdin = stdin
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
@@ -36,17 +38,17 @@ func Run(argv []string, env map[string]string, stdin io.Reader, stdout, stderr i
 
 	select {
 	case err := <-done:
-		return err
+		return flushDemanglers(err, stdout, stderr)
 	case sig := <-signals:
 		signalProcessGroup(cmd.Process.Pid, sig)
 	}
 
 	select {
 	case err := <-done:
-		return err
+		return flushDemanglers(err, stdout, stderr)
 	case <-time.After(shutdownGrace):
 		killProcessGroup(cmd.Process.Pid)
-		return <-done
+		return flushDemanglers(<-done, stdout, stderr)
 	}
 }
 

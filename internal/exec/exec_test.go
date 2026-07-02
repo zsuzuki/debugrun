@@ -3,6 +3,7 @@
 package exec
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -14,6 +15,37 @@ import (
 	"testing"
 	"time"
 )
+
+func TestDemangleLineReplacesMangledSymbols(t *testing.T) {
+	cxxfilt := fakeCxxFilt(t)
+
+	line := "2   app  0x1 _ZN8GTEngine4TickEv + 12\n4   app  0x2 _ZZN3Foo3barEvEN3$_08__invokeEv + 24\n"
+	got := demangleLine(cxxfilt, line)
+	want := "2   app  0x1 GTEngine::Tick() + 12\n4   app  0x2 Foo::bar()::$_0::__invoke() + 24\n"
+	if got != want {
+		t.Fatalf("demangleLine() = %q, want %q", got, want)
+	}
+}
+
+func TestDemangleWriterFlushesPartialLine(t *testing.T) {
+	var out bytes.Buffer
+	writer := &demangleWriter{dst: &out, cxxfilt: fakeCxxFilt(t)}
+
+	if _, err := writer.Write([]byte("frame _ZN8GTEngine4TickEv")); err != nil {
+		t.Fatalf("Write() error = %v", err)
+	}
+	if out.Len() != 0 {
+		t.Fatalf("Write() wrote partial line %q before flush", out.String())
+	}
+	if err := writer.Flush(); err != nil {
+		t.Fatalf("Flush() error = %v", err)
+	}
+
+	want := "frame GTEngine::Tick()"
+	if got := out.String(); got != want {
+		t.Fatalf("writer output = %q, want %q", got, want)
+	}
+}
 
 func TestRunKillsProcessGroupOnInterrupt(t *testing.T) {
 	pidFile := filepath.Join(t.TempDir(), "child.pid")
@@ -46,6 +78,25 @@ func TestRunKillsProcessGroupOnInterrupt(t *testing.T) {
 	}
 
 	eventuallyNoProcess(t, childPID)
+}
+
+func fakeCxxFilt(t *testing.T) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "c++filt")
+	script := strings.Join([]string{
+		"#!/bin/sh",
+		"for arg do",
+		"  case \"$arg\" in",
+		"    _ZN8GTEngine4TickEv) echo 'GTEngine::Tick()' ;;",
+		"    _ZZN3Foo3barEvEN3\\$_08__invokeEv) echo 'Foo::bar()::$_0::__invoke()' ;;",
+		"    *) echo \"$arg\" ;;",
+		"  esac",
+		"done",
+	}, "\n")
+	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
+		t.Fatalf("write fake c++filt: %v", err)
+	}
+	return path
 }
 
 func waitForPIDFile(t *testing.T, path string) int {
